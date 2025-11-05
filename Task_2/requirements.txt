@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+pymysql
+requests
+python-dotenv
+pillow
+httpx
+sqlalchemy
