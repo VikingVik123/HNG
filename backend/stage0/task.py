@@ -1,5 +1,5 @@
 import requests
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -11,10 +11,17 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Custom middleware to explicitly set CORS header
+@app.middleware("http")
+async def add_cors_header(request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
 
 
 @app.get("/api/classify")
@@ -31,9 +38,9 @@ async def classify_name(name: Optional[str] = Query(None)):
     
     # Validate name parameter - check if missing or empty
     if name is None or name == "":
-        raise HTTPException(
+        return JSONResponse(
             status_code=400,
-            detail={"status": "error", "message": "Missing or empty name parameter"},
+            content={"status": "error", "message": "Missing or empty name parameter"},
         )
     
     # Validate name is a string type

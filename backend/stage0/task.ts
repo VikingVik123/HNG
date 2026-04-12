@@ -7,8 +7,19 @@ import swaggerJsdoc from 'swagger-jsdoc';
 const app: Express = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: false,
+}));
 app.use(express.json());
+
+// Explicitly set CORS header
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
 
 // Swagger configuration
 const swaggerOptions = {
@@ -257,7 +268,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`TypeScript Server is running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/`);
