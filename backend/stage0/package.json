@@ -1,0 +1,41 @@
+{
+  "name": "gender-classification-api",
+  "version": "1.0.0",
+  "description": "Gender Classification API - FastAPI (Python), Express.js, Express, and TypeScript implementations",
+  "main": "task_ex.js",
+  "scripts": {
+    "start": "node task_ex.js",
+    "dev": "nodemon task_ex.js",
+    "start-nest": "node task_nest.js",
+    "dev-nest": "nodemon task_nest.js",
+    "start-ts": "npx ts-node task.ts",
+    "dev-ts": "nodemon --exec npx ts-node task.ts",
+    "build-ts": "tsc"
+  },
+  "keywords": [
+    "express",
+    "nestjs",
+    "api",
+    "genderize",
+    "classification"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.6",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
