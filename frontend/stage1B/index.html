@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giyu Tomioka - Profile Card</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <main class="main-container">
+        <article class="profile-card" data-testid="test-profile-card">
+            <!-- Header with avatar and basic info -->
+            <div class="card-top">
+                <figure class="avatar-figure">
+                    <img 
+                        src="https://4kwallpapers.com/images/walls/thumbs_3t/16854.png"
+                        alt="Profile photo of Giyu Tomioka, Water Hashira from Demon Slayer"
+                        class="user-avatar"
+                        data-testid="test-user-avatar"
+                        width="120"
+                        height="120"
+                    >
+                    <figcaption class="avatar-caption">Giyu Tomioka - Water Hashira</figcaption>
+                </figure>
+
+                <div class="user-header">
+                    <h1 class="user-name" data-testid="test-user-name">Giyu Tomioka</h1>
+                    <time class="current-time" data-testid="test-user-time" datetime="">
+                        <span class="time-value">0</span>
+                    </time>
+                </div>
+            </div>
+
+            <!-- Biography section -->
+            <section class="bio-section">
+                <p class="user-bio" data-testid="test-user-bio">
+                    Giyu Tomioka is the Water Hashira of the Demon Slayer Corps, renowned for his exceptional mastery of Water Breathing techniques. 
+                    With a calm and composed demeanor, he protects humanity from demons with unwavering determination and unmatched swordsmanship.
+                </p>
+            </section>
+
+            <!-- Social links section -->
+            <nav class="social-section">
+                <h2 class="section-title">Affiliations</h2>
+                <ul class="social-links" data-testid="test-user-social-links">
+                    <li class="social-item">
+                        <a 
+                            href="#" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="social-link"
+                            data-testid="test-user-social-twitter"
+                            aria-label="Demon Slayer Corps"
+                        >
+                            Demon Slayer Corps
+                        </a>
+                    </li>
+                    <li class="social-item">
+                        <a 
+                            href="#" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="social-link"
+                            data-testid="test-user-social-github"
+                            aria-label="Kimetsu Academy"
+                        >
+                            Kimetsu Academy
+                        </a>
+                    </li>
+                    <li class="social-item">
+                        <a 
+                            href="#" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="social-link"
+                            data-testid="test-user-social-linkedin"
+                            aria-label="Butterfly Mansion"
+                        >
+                            Butterfly Mansion
+                        </a>
+                    </li>
+                    <li class="social-item">
+                        <a 
+                            href="#" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="social-link"
+                            data-testid="test-user-social-instagram"
+                            aria-label="Water Breath Masters"
+                        >
+                            Water Breath Masters
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Hobbies section -->
+            <section class="hobbies-section">
+                <h2 class="section-title">Hobbies</h2>
+                <ul class="hobbies-list" data-testid="test-user-hobbies">
+                    <li class="hobby-item">Water Breathing Forms</li>
+                    <li class="hobby-item">Sword Training</li>
+                    <li class="hobby-item">Demon Slaying</li>
+                    <li class="hobby-item">Meditation</li>
+                    <li class="hobby-item">Reading Ancient Scrolls</li>
+                </ul>
+            </section>
+
+            <!-- Dislikes section -->
+            <section class="dislikes-section">
+                <h2 class="section-title">Dislikes</h2>
+                <ul class="dislikes-list" data-testid="test-user-dislikes">
+                    <li class="dislike-item">Demons & Evil</li>
+                    <li class="dislike-item">Reckless Behavior</li>
+                    <li class="dislike-item">Arrogance</li>
+                    <li class="dislike-item">Giving Up</li>
+                    <li class="dislike-item">Betrayal</li>
+                </ul>
+            </section>
+        </article>
+    </main>
+
+    <script src="index.js"></script>
+</body>
+</html>
