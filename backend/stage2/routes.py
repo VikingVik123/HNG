@@ -58,17 +58,41 @@ def create_profile(request: CreateProfileRequest, db: Session = Depends(get_db))
         
 @router.get("/profiles")
 def get_profiles(
-    gender: str = Query(None),
-    country_id: str = Query(None),
-    age_group: str = Query(None),
+    gender: str = Query(None, description="Filter by gender (case-insensitive)"),
+    country_id: str = Query(None, description="Filter by country ID (case-insensitive)"),
+    age_group: str = Query(None, description="Filter by age group (case-insensitive)"),
+    min_age: int = Query(None, description="Minimum age filter"),
+    max_age: int = Query(None, description="Maximum age filter"),
+    min_gender_probability: float = Query(None, description="Minimum gender probability (0-1)"),
+    min_country_probability: float = Query(None, description="Minimum country probability (0-1)"),
     db: Session = Depends(get_db)
 ):
     """
-    Retrieve a list of all user profiles with optional filtering.
-    Query params: gender, country_id, age_group (case-insensitive)
+    Retrieve a list of all user profiles with advanced optional filtering.
+    
+    Supported filters:
+    - gender: Filter by gender (case-insensitive)
+    - age_group: Filter by age group (case-insensitive)
+    - country_id: Filter by country ID (case-insensitive)
+    - min_age: Minimum age (inclusive)
+    - max_age: Maximum age (inclusive)
+    - min_gender_probability: Minimum gender probability (0-1)
+    - min_country_probability: Minimum country probability (0-1)
+    
+    Example: /api/profiles?gender=male&country_id=NG&min_age=25
+    
+    Filters are combinable and results strictly match all conditions.
     """
     service = ProfileService(db)
-    profiles = service.get_profiles(gender=gender, country_id=country_id, age_group=age_group)
+    profiles = service.get_profiles(
+        gender=gender,
+        country_id=country_id,
+        age_group=age_group,
+        min_age=min_age,
+        max_age=max_age,
+        min_gender_probability=min_gender_probability,
+        min_country_probability=min_country_probability
+    )
     serialized_data = [serialize_profile_list(p) for p in profiles]
     return {
         "status": "success",
@@ -108,11 +132,4 @@ def delete_profile(profile_id: str, db: Session = Depends(get_db)):
             detail={"status": "error", "message": "Profile not found"}
         )
     return None
-    service = ProfileService(db)
-    try:
-        success = service.delete_profile(profile_id)
-        if not success:
-            raise HTTPException(status_code=404, detail="Profile not found")
-        return
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    

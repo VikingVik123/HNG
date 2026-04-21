@@ -104,20 +104,52 @@ class ProfileService:
         except (ValueError, TypeError):
             return None
     
-    def get_profiles(self, gender: str = None, country_id: str = None, age_group: str = None, skip: int = 0, limit: int = 100):
+    def get_profiles(
+        self,
+        gender: str = None,
+        country_id: str = None,
+        age_group: str = None,
+        min_age: int = None,
+        max_age: int = None,
+        min_gender_probability: float = None,
+        min_country_probability: float = None,
+        skip: int = 0,
+        limit: int = 100
+    ):
         """
-        Retrieve a list of user profiles with optional filtering (case-insensitive).
-        Supports filtering by: gender, country_id, age_group
+        Retrieve a list of user profiles with advanced optional filtering.
+        Supports filtering by:
+        - gender (case-insensitive partial match)
+        - country_id (case-insensitive partial match)
+        - age_group (case-insensitive partial match)
+        - min_age (minimum age)
+        - max_age (maximum age)
+        - min_gender_probability (minimum gender probability)
+        - min_country_probability (minimum country probability)
+        
+        All filters are combinable and results strictly match all conditions.
         """
         query = self.db.query(Profile)
         
-        # Apply filters if provided
+        # Apply categorical filters (case-insensitive)
         if gender:
             query = query.filter(Profile.gender.ilike(f"%{gender}%"))
         if country_id:
             query = query.filter(Profile.country_id.ilike(f"%{country_id}%"))
         if age_group:
             query = query.filter(Profile.age_group.ilike(f"%{age_group}%"))
+        
+        # Apply numeric range filters
+        if min_age is not None:
+            query = query.filter(Profile.age >= min_age)
+        if max_age is not None:
+            query = query.filter(Profile.age <= max_age)
+        
+        # Apply probability filters
+        if min_gender_probability is not None:
+            query = query.filter(Profile.gender_probability >= min_gender_probability)
+        if min_country_probability is not None:
+            query = query.filter(Profile.country_probability >= min_country_probability)
         
         return query.offset(skip).limit(limit).all()
     
