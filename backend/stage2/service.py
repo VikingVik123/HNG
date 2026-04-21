@@ -2,6 +2,7 @@ import httpx
 from uuid import uuid4, UUID
 from datetime import datetime, timedelta, timezone
 import os
+import re
 from dotenv import load_dotenv
 from db import get_db
 from model import Profile
@@ -115,37 +116,21 @@ class ProfileService:
         min_country_probability: float = None,
         sort_by: str = None,
         order: str = "asc",
-        skip: int = 0,
-        limit: int = 100
+        page: int = 1,
+        limit: int = 10
     ):
         """
-        Retrieve a list of user profiles with advanced optional filtering and sorting.
-        
-        Supports filtering by:
-        - gender (case-insensitive partial match)
-        - country_id (case-insensitive partial match)
-        - age_group (case-insensitive partial match)
-        - min_age (minimum age)
-        - max_age (maximum age)
-        - min_gender_probability (minimum gender probability)
-        - min_country_probability (minimum country probability)
-        
-        Supports sorting by:
-        - age: Sort by age
-        - created_at: Sort by creation date
-        - gender_probability: Sort by gender probability
-        
-        All filters are combinable and results strictly match all conditions.
+        Retrieve a list of user profiles with advanced optional filtering, sorting, and pagination.
         """
         query = self.db.query(Profile)
         
-        # Apply categorical filters (case-insensitive)
+        # Apply categorical filters (case-insensitive exact match, not partial)
         if gender:
-            query = query.filter(Profile.gender.ilike(f"%{gender}%"))
+            query = query.filter(Profile.gender.ilike(gender))
         if country_id:
-            query = query.filter(Profile.country_id.ilike(f"%{country_id}%"))
+            query = query.filter(Profile.country_id.ilike(country_id))
         if age_group:
-            query = query.filter(Profile.age_group.ilike(f"%{age_group}%"))
+            query = query.filter(Profile.age_group.ilike(age_group))
         
         # Apply numeric range filters
         if min_age is not None:
@@ -158,6 +143,9 @@ class ProfileService:
             query = query.filter(Profile.gender_probability >= min_gender_probability)
         if min_country_probability is not None:
             query = query.filter(Profile.country_probability >= min_country_probability)
+        
+        # Get total count before pagination
+        total = query.count()
         
         # Apply sorting
         if sort_by:
@@ -175,7 +163,14 @@ class ProfileService:
                 else:
                     query = query.order_by(sort_column.asc())
         
-        return query.offset(skip).limit(limit).all()
+        # Apply pagination
+        skip = (page - 1) * limit
+        profiles = query.offset(skip).limit(limit).all()
+        
+        return {
+            "total": total,
+            "data": profiles
+        }
     
     def delete_profile(self, profile_id: str):
         """
@@ -191,3 +186,171 @@ class ProfileService:
             return False
         except (ValueError, TypeError):
             return False
+    
+    def parse_natural_language_query(self, query: str):
+        """
+        Parse natural language query and convert to filters using rule-based parsing.
+        
+        Returns: dict with filter parameters or None if unable to interpret
+        
+        Example mappings:
+        "young males" → gender=male + min_age=16 + max_age=24
+        "females above 30" → gender=female + min_age=30
+        "people from angola" → country_id=AO
+        "adult males from kenya" → gender=male + age_group=adult + country_id=KE
+        "male and female teenagers above 17" → age_group=teenager + min_age=17
+        """
+        if not query or not isinstance(query, str):
+            return None
+        
+        query_lower = query.lower().strip()
+        filters = {}
+        
+        # Country mapping (name to country code)
+        country_map = {
+            "nigeria": "NG", "nigerian": "NG",
+            "kenya": "KE", "kenyan": "KE",
+            "south africa": "ZA", "south african": "ZA",
+            "ghana": "GH", "ghanaian": "GH",
+            "uganda": "UG", "ugandan": "UG",
+            "tanzania": "TZ", "tanzanian": "TZ",
+            "ethiopia": "ET", "ethiopian": "ET",
+            "cameroon": "CM", "cameroonian": "CM",
+            "angola": "AO", "angolan": "AO",
+            "mozambique": "MZ", "mozambican": "MZ",
+            "zambia": "ZM", "zambian": "ZM",
+            "zimbabwe": "ZW", "zimbabwean": "ZW",
+            "botswana": "BW", "batswana": "BW",
+            "namibia": "NA", "namibian": "NA",
+            "malawi": "MW", "malawian": "MW",
+            "senegal": "SN", "senegalese": "SN",
+            "ivory coast": "CI", "côte d'ivoire": "CI",
+            "united states": "US", "usa": "US", "american": "US",
+            "united kingdom": "GB", "uk": "GB", "british": "GB",
+            "canada": "CA", "canadian": "CA",
+            "australia": "AU", "australian": "AU",
+            "india": "IN", "indian": "IN",
+            "china": "CN", "chinese": "CN",
+        }
+        
+        # Gender mapping
+        gender_keywords = {
+            "male": "male", "man": "male", "boy": "male", "men": "male", "boys": "male",
+            "female": "female", "woman": "female", "girl": "female", "women": "female", "girls": "female"
+        }
+        
+        # Age group keywords
+        age_group_keywords = {
+            "teenager": "teenager", "teen": "teenager", "teenagers": "teenager", "teens": "teenager",
+            "adult": "adult", "adults": "adult",
+            "child": "child", "children": "child", "kid": "child", "kids": "child",
+            "senior": "senior", "seniors": "senior", "elderly": "senior"
+        }
+        
+        # Extract country
+        for country_name, country_code in country_map.items():
+            if country_name in query_lower:
+                filters["country_id"] = country_code
+                query_lower = query_lower.replace(country_name, "")
+                break
+        
+        # Extract gender - handle "male and female" with word boundary matching
+        # Check for female keywords (including plural forms) - use word boundaries
+        female_keywords = ["female", "females", "woman", "women", "girl", "girls"]
+        male_keywords = ["male", "males", "man", "men", "boy", "boys"]
+        
+        # Use regex with word boundaries to match whole words only
+        has_female = any(re.search(r'\b' + keyword + r'\b', query_lower) for keyword in female_keywords)
+        has_male = any(re.search(r'\b' + keyword + r'\b', query_lower) for keyword in male_keywords)
+        
+        if has_male and has_female:
+            # Both genders specified, don't filter by gender
+            pass
+        elif has_male:
+            filters["gender"] = "male"
+        elif has_female:
+            filters["gender"] = "female"
+        
+        # Extract age group
+        for keyword, age_group in age_group_keywords.items():
+            if keyword in query_lower:
+                filters["age_group"] = age_group
+                break
+        
+        # Extract numeric ages and modifiers
+        # Pattern to find numbers in the query
+        numbers = re.findall(r'\b(\d+)\b', query_lower)
+        
+        if numbers:
+            age_num = int(numbers[0])
+            
+            # Check for modifiers before the number
+            if any(mod in query_lower for mod in ["above", "older than", "over", "more than", "at least", "above"]):
+                # Extract the position of "above" or similar
+                if "above" in query_lower:
+                    idx = query_lower.index("above")
+                    # Check if number comes after "above"
+                    if query_lower[idx:].find(str(age_num)) != -1:
+                        filters["min_age"] = age_num
+                elif "older than" in query_lower or "over" in query_lower or "more than" in query_lower or "at least" in query_lower:
+                    filters["min_age"] = age_num
+            elif any(mod in query_lower for mod in ["below", "younger than", "under", "less than"]):
+                if "below" in query_lower:
+                    idx = query_lower.index("below")
+                    if query_lower[idx:].find(str(age_num)) != -1:
+                        filters["max_age"] = age_num
+                elif "younger than" in query_lower or "under" in query_lower or "less than" in query_lower:
+                    filters["max_age"] = age_num
+            else:
+                # Just a number without modifier
+                filters["min_age"] = age_num
+        
+        # Handle "young" keyword - maps to ages 16-24
+        if "young" in query_lower:
+            if "min_age" not in filters:
+                filters["min_age"] = 16
+            if "max_age" not in filters:
+                filters["max_age"] = 24
+        
+        # Handle "old" or "older" keyword
+        if ("old" in query_lower or "older" in query_lower) and "min_age" not in filters:
+            # Default to 40+ if no specific age given
+            filters["min_age"] = 40
+        
+        # Validate that we found at least some meaningful filter
+        if not filters or (len(filters) == 0):
+            return None
+        
+        return filters
+    
+    def get_profiles_by_query(
+        self,
+        query: str,
+        page: int = 1,
+        limit: int = 10
+    ):
+        """
+        Retrieve profiles by natural language query.
+        
+        Returns: dict with 'total', 'data', 'filters_used' keys, or None if query couldn't be parsed
+        """
+        filters = self.parse_natural_language_query(query)
+        
+        if filters is None:
+            return None
+        
+        # Call get_profiles with the parsed filters
+        result = self.get_profiles(
+            gender=filters.get("gender"),
+            country_id=filters.get("country_id"),
+            age_group=filters.get("age_group"),
+            min_age=filters.get("min_age"),
+            max_age=filters.get("max_age"),
+            page=page,
+            limit=limit
+        )
+        
+        # Add filters_used to the result
+        result["filters_used"] = filters
+        
+        return result
