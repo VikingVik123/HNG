@@ -1,0 +1,10 @@
+fastapi
+sqlalchemy
+uvicorn
+uvicorn[standard]
+httpx
+pytest
+requests
+python-dotenv
+dotenv
+uuid6
