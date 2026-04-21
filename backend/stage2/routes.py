@@ -65,10 +65,12 @@ def get_profiles(
     max_age: int = Query(None, description="Maximum age filter"),
     min_gender_probability: float = Query(None, description="Minimum gender probability (0-1)"),
     min_country_probability: float = Query(None, description="Minimum country probability (0-1)"),
+    sort_by: str = Query(None, description="Sort by field: age | created_at | gender_probability"),
+    order: str = Query("asc", description="Sort order: asc | desc"),
     db: Session = Depends(get_db)
 ):
     """
-    Retrieve a list of all user profiles with advanced optional filtering.
+    Retrieve a list of all user profiles with advanced optional filtering and sorting.
     
     Supported filters:
     - gender: Filter by gender (case-insensitive)
@@ -79,7 +81,13 @@ def get_profiles(
     - min_gender_probability: Minimum gender probability (0-1)
     - min_country_probability: Minimum country probability (0-1)
     
+    Supported sorting:
+    - sort_by: age | created_at | gender_probability
+    - order: asc | desc (default: asc)
+    
     Example: /api/profiles?gender=male&country_id=NG&min_age=25
+    Example: /api/profiles?sort_by=age&order=desc
+    Example: /api/profiles?age_group=adult&sort_by=created_at&order=asc
     
     Filters are combinable and results strictly match all conditions.
     """
@@ -91,7 +99,9 @@ def get_profiles(
         min_age=min_age,
         max_age=max_age,
         min_gender_probability=min_gender_probability,
-        min_country_probability=min_country_probability
+        min_country_probability=min_country_probability,
+        sort_by=sort_by,
+        order=order
     )
     serialized_data = [serialize_profile_list(p) for p in profiles]
     return {

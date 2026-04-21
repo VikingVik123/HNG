@@ -113,11 +113,14 @@ class ProfileService:
         max_age: int = None,
         min_gender_probability: float = None,
         min_country_probability: float = None,
+        sort_by: str = None,
+        order: str = "asc",
         skip: int = 0,
         limit: int = 100
     ):
         """
-        Retrieve a list of user profiles with advanced optional filtering.
+        Retrieve a list of user profiles with advanced optional filtering and sorting.
+        
         Supports filtering by:
         - gender (case-insensitive partial match)
         - country_id (case-insensitive partial match)
@@ -126,6 +129,11 @@ class ProfileService:
         - max_age (maximum age)
         - min_gender_probability (minimum gender probability)
         - min_country_probability (minimum country probability)
+        
+        Supports sorting by:
+        - age: Sort by age
+        - created_at: Sort by creation date
+        - gender_probability: Sort by gender probability
         
         All filters are combinable and results strictly match all conditions.
         """
@@ -150,6 +158,22 @@ class ProfileService:
             query = query.filter(Profile.gender_probability >= min_gender_probability)
         if min_country_probability is not None:
             query = query.filter(Profile.country_probability >= min_country_probability)
+        
+        # Apply sorting
+        if sort_by:
+            sort_column = None
+            if sort_by.lower() == "age":
+                sort_column = Profile.age
+            elif sort_by.lower() == "created_at":
+                sort_column = Profile.created_at
+            elif sort_by.lower() == "gender_probability":
+                sort_column = Profile.gender_probability
+            
+            if sort_column is not None:
+                if order.lower() == "desc":
+                    query = query.order_by(sort_column.desc())
+                else:
+                    query = query.order_by(sort_column.asc())
         
         return query.offset(skip).limit(limit).all()
     
