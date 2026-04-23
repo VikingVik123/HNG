@@ -4,9 +4,28 @@
   color: var(--text-secondary);
 }
 
+@media (max-width: 768px) {
+  .empty-state {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .empty-state {
+    padding: 1.5rem 1rem;
+  }
+}
+
 .empty-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
+}
+
+@media (max-width: 480px) {
+  .empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
 }
 
 .empty-state h2 {
@@ -15,6 +34,20 @@
   font-size: 1.5rem;
 }
 
+@media (max-width: 480px) {
+  .empty-state h2 {
+    font-size: 1.2rem;
+    margin: 0.75rem 0 0.4rem;
+  }
+}
+
 .empty-state p {
   margin: 0;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  .empty-state p {
+    font-size: 0.9rem;
+  }
 }

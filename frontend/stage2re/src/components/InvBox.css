@@ -16,11 +16,43 @@
   transform: translateY(-2px);
 }
 
+/* Tablet: Responsive spacing */
+@media (max-width: 768px) {
+  .invoice-box {
+    padding: 1rem 1.2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+/* Mobile: Custom grid layout */
+@media (max-width: 480px) {
+  .invoice-box {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+    align-items: center;
+    padding: 1.25rem 1rem;
+    gap: 0.5rem 1rem;
+    flex-direction: initial;
+    align-items: initial;
+  }
+}
+
 .invoice-id {
   font-weight: 700;
   color: var(--text-primary);
   min-width: 4.5rem;
   font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  .invoice-id {
+    font-size: 1.1rem;
+    font-weight: 700;
+    grid-column: 1;
+    grid-row: 1;
+  }
 }
 
 .invoice-due-date {
@@ -29,10 +61,36 @@
   min-width: 5.5rem;
 }
 
+@media (max-width: 768px) {
+  .invoice-due-date {
+    min-width: auto;
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .invoice-due-date {
+    display: block;
+    font-size: 0.85rem;
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+
 .invoice-name {
   flex: 1;
   color: var(--text-secondary);
   font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  .invoice-name {
+    font-size: 0.9rem;
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+  }
 }
 
 .invoice-amount {
@@ -41,6 +99,24 @@
   min-width: 5rem;
   text-align: right;
   font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .invoice-amount {
+    min-width: auto;
+    flex: 1;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .invoice-amount {
+    font-size: 1rem;
+    font-weight: 700;
+    grid-column: 1;
+    grid-row: 3;
+    text-align: left;
+  }
 }
 
 .invoice-status {
@@ -52,6 +128,22 @@
   font-size: 0.85rem;
   font-weight: 600;
   min-width: 4.5rem;
+}
+
+@media (max-width: 768px) {
+  .invoice-status {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .invoice-status {
+    grid-column: 2;
+    grid-row: 3;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+    justify-content: flex-end;
+  }
 }
 
 .status-dot {
@@ -92,4 +184,14 @@
   font-size: 1.5rem;
   color: var(--text-secondary);
   flex-shrink: 0;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .arrow-icon {
+    grid-column: 2;
+    grid-row: 2 / 4;
+    align-self: center;
+    font-size: 1.5rem;
+  }
 }
