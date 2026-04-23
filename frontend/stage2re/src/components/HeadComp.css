@@ -1,26 +1,9 @@
-<script setup>
-defineProps({
-  count: {
-    type: Number,
-    default: 0
-  }
-});
-</script>
-
-<template>
-  <div class="header">
-    <h1>Invoices</h1>
-    <p>There are {{ count }} total invoices</p>
-  </div>
-</template>
-
-<style scoped>
 .header {
   padding: 0;
   margin: 0;
 }
 
-h1 {
+.header h1 {
   margin: 0;
   padding: 0;
   font-size: 1.5rem;
@@ -29,11 +12,10 @@ h1 {
   line-height: 1;
 }
 
-p {
+.header p {
   margin: 0;
   padding: 0;
   color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1;
 }
-</style>

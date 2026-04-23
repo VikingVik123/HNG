@@ -1,45 +1,3 @@
-<script setup>
-defineProps({
-  id: {
-    type: String,
-    default: ''
-  },
-  dueDate: {
-    type: String,
-    default: ''
-  },
-  name: {
-    type: String,
-    default: ''
-  },
-  amount: {
-    type: Number,
-    default: 0
-  },
-  status: {
-    type: String,
-    default: 'draft'
-  }
-});
-
-defineEmits(['click']);
-</script>
-
-<template>
-  <div class="invoice-box" @click="$emit('click')" v-if="id">
-    <div class="invoice-id">{{ id }}</div>
-    <div class="invoice-due-date">Due {{ dueDate }}</div>
-    <div class="invoice-name">{{ name }}</div>
-    <div class="invoice-amount">£ {{ amount }}</div>
-    <div class="invoice-status" :class="status.toLowerCase()">
-      <span class="status-dot"></span>
-      {{ status }}
-    </div>
-    <div class="arrow-icon">›</div>
-  </div>
-</template>
-
-<style scoped>
 .invoice-box {
   background-color: var(--card-bg);
   border-radius: 0.5rem;
@@ -103,42 +61,35 @@ defineEmits(['click']);
   display: inline-block;
 }
 
-.invoice-status.paid {
-  color: #00d099;
-}
-
-.invoice-status.paid .status-dot {
-  background-color: #00d099;
-}
-
-.invoice-status.pending {
-  color: #ff8f42;
-}
-
-.invoice-status.pending .status-dot {
-  background-color: #ff8f42;
-}
-
-.invoice-status.overdue {
-  color: #ff5757;
-}
-
-.invoice-status.overdue .status-dot {
-  background-color: #ff5757;
-}
-
 .invoice-status.draft {
-  color: #9ca3af;
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 
 .invoice-status.draft .status-dot {
   background-color: #9ca3af;
 }
 
+.invoice-status.pending {
+  background-color: #fed7aa;
+  color: #92400e;
+}
+
+.invoice-status.pending .status-dot {
+  background-color: #ff8f42;
+}
+
+.invoice-status.paid {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.invoice-status.paid .status-dot {
+  background-color: #00d099;
+}
+
 .arrow-icon {
   font-size: 1.5rem;
-  color: #8b94a5;
-  min-width: 1.5rem;
-  text-align: right;
+  color: var(--text-secondary);
+  flex-shrink: 0;
 }
-</style>
