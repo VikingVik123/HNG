@@ -14,7 +14,7 @@
   padding: 2rem;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
   .invoice-form-content {
     margin-left: 0;
     padding: 1.5rem 1rem;
