@@ -5,7 +5,7 @@ import os
 import re
 from dotenv import load_dotenv
 from db import get_db
-from model import Profile
+from models.model import Profile
 from exceptions import ExternalAPIException, ProfileNotFoundException
 
 load_dotenv()

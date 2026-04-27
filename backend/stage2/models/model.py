@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, UUID, Float, Index
+from sqlalchemy import Column, Integer, String, DateTime, UUID, Float, Index, Boolean
 from db import Base
 from uuid6 import uuid7
 from datetime import datetime, timezone
@@ -24,4 +24,6 @@ class Profile(Base):
     __table_args__ = (
         Index('ix_profile_name_unique', 'name', unique=True),
     )
+
+
 

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, OperationalError
 from db import engine, SessionLocal, Base, create_tables
-from model import Profile
+from models.model import Profile
 
 
 def verify_database_constraints() -> bool:
