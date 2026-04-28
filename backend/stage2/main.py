@@ -2,6 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from db import Base, engine, get_db
 from routers.routes import router
+from routers.auth_routes import router as auth_router
+from routers.user_routes import router as user_router
+
+# Import models to register them with Base (must be before create_all)
+from models.auth_model import Token
+from models.user_model import Users
+from models.model import Profile
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -23,6 +30,8 @@ app.add_middleware(
 )
 
 # Include routes
+app.include_router(auth_router)
+app.include_router(user_router)
 app.include_router(router)
 
 @app.get("/")

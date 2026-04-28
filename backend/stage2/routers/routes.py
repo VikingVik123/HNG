@@ -9,6 +9,8 @@ from datetime import datetime
 from db import get_db
 from services.service import ProfileService
 from utils import serialize_profile, serialize_profile_list
+from auth.dependencies import get_current_user, require_admin
+from models.user_model import Users
 from exceptions import (
     APIException,
     InvalidRequestException,
@@ -77,11 +79,19 @@ class CreateProfileRequest(BaseModel):
     name: str
 
 @router.post("/profiles", status_code=status.HTTP_201_CREATED)
-def create_profile(request: CreateProfileRequest, db: Session = Depends(get_db), api_version: str = Depends(get_api_version)):
+def create_profile(
+    request: CreateProfileRequest,
+    current_user: Users = Depends(get_current_user),
+    _: Users = Depends(require_admin),
+    db: Session = Depends(get_db),
+    api_version: str = Depends(get_api_version)
+):
     """
     Create a new user profile by fetching data from external APIs and storing it in the database.
     Request body: {"name": "ella"}
     If a profile with the same name already exists, return it (idempotency).
+    
+    **Requires:** Admin role
     
     **Duplicate Protection:**
     - Application-level idempotency check
@@ -141,6 +151,8 @@ def create_profile(request: CreateProfileRequest, db: Session = Depends(get_db),
         )
 @router.get("/profiles")
 def get_profiles(
+    current_user: Users = Depends(get_current_user),
+    db: Session = Depends(get_db),
     gender: str = Query(None, description="Filter by gender (case-insensitive)"),
     country_id: str = Query(None, description="Filter by country ID (case-insensitive)"),
     age_group: str = Query(None, description="Filter by age group (case-insensitive)"),
@@ -152,7 +164,6 @@ def get_profiles(
     order: str = Query("asc", description="Sort order: asc | desc"),
     page: int = Query(1, ge=1, description="Page number (default: 1)"),
     limit: int = Query(10, ge=1, le=50, description="Results per page (default: 10, max: 50)"),
-    db: Session = Depends(get_db),
     api_version: str = Depends(get_api_version)
 ):
     """
@@ -210,13 +221,16 @@ def get_profiles(
 @router.get("/profiles/search")
 def search_profiles(
     q: str = Query(..., description="Natural language query"),
+    current_user: Users = Depends(get_current_user),
+    db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number (default: 1)"),
     limit: int = Query(10, ge=1, le=50, description="Results per page (default: 10, max: 50)"),
-    db: Session = Depends(get_db),
     api_version: str = Depends(get_api_version)
 ):
     """
     Search profiles using natural language query.
+    
+    **Requires:** Authentication
     
     Query validation rules:
     - Must not be empty or whitespace-only
@@ -288,6 +302,8 @@ def search_profiles(
 
 @router.get("/profiles/export")
 def export_profiles(
+    current_user: Users = Depends(get_current_user),
+    db: Session = Depends(get_db),
     gender: str = Query(None, description="Filter by gender (case-insensitive)"),
     country_id: str = Query(None, description="Filter by country ID (case-insensitive)"),
     age_group: str = Query(None, description="Filter by age group (case-insensitive)"),
@@ -298,13 +314,14 @@ def export_profiles(
     sort_by: str = Query(None, description="Sort by field: age | created_at | gender_probability"),
     order: str = Query("asc", description="Sort order: asc | desc"),
     format: str = Query("csv", description="Export format (currently supports: csv)"),
-    db: Session = Depends(get_db),
     api_version: str = Depends(get_api_version)
 ):
     """
     Export profiles as CSV file with all filters and sorting applied.
     Returns a downloadable CSV file with columns:
     id, name, gender, gender_probability, age, age_group, country_id, country_name, country_probability, created_at
+    
+    **Requires:** Authentication
     """
     if format.lower() != "csv":
         raise HTTPException(
@@ -366,9 +383,16 @@ def export_profiles(
     )
     
 @router.get("/profiles/{profile_id}")
-def get_profile(profile_id: str, db: Session = Depends(get_db), api_version: str = Depends(get_api_version)):
+def get_profile(
+    profile_id: str,
+    current_user: Users = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    api_version: str = Depends(get_api_version)
+):
     """
     Retrieve a user profile by its unique identifier.
+    
+    **Requires:** Authentication
     """
     service = ProfileService(db)
     profile = service.get_profile(profile_id)
@@ -384,10 +408,18 @@ def get_profile(profile_id: str, db: Session = Depends(get_db), api_version: str
     }
     
 @router.delete("/profiles/{profile_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_profile(profile_id: str, db: Session = Depends(get_db), api_version: str = Depends(get_api_version)):
+def delete_profile(
+    profile_id: str,
+    current_user: Users = Depends(get_current_user),
+    _: Users = Depends(require_admin),
+    db: Session = Depends(get_db),
+    api_version: str = Depends(get_api_version)
+):
     """
     Delete a user profile by its unique identifier.
     Returns 204 No Content on success.
+    
+    **Requires:** Admin role
     """
     service = ProfileService(db)
     result = service.delete_profile(profile_id)

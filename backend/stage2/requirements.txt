@@ -9,3 +9,5 @@ python-dotenv
 dotenv
 uuid6
 pyJWT
+passlib
+argon
