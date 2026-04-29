@@ -234,3 +234,20 @@ def get_current_user_info(current_user: Users = Depends(get_current_user)):
         UserAuthResponse with user details
     """
     return serialize_user(current_user)
+
+@router.post("/github/exchange")
+def github_exchange(code: str, code_verifier: str, redirect_uri: str, db: Session = Depends(get_db)):
+    auth_service = AuthService(db)
+
+    github_token = auth_service.get_github_access_token(code, code_verifier)
+    github_user = auth_service.get_github_user_info(github_token)
+
+    user, _ = auth_service.create_or_update_user(github_user)
+
+    tokens = auth_service.issue_tokens(str(user.id))
+
+    return {
+        "access_token": tokens["access_token"],
+        "refresh_token": tokens["refresh_token"],
+        "user": serialize_user(user)
+    }
