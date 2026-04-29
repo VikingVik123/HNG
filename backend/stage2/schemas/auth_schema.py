@@ -105,5 +105,3 @@ class ErrorResponse(BaseModel):
 
 class ExchangeRequest(BaseModel):
     code: str
-    code_verifier: str
-    redirect_uri: str
