@@ -12,7 +12,8 @@ from schemas.auth_schema import (
     LogoutRequest,
     LogoutResponse,
     GitHubAuthCallbackRequest,
-    UserAuthResponse
+    UserAuthResponse,
+    ExchangeRequest
 )
 from services.auth_sevice import AuthService
 from auth.oauth import generate_pkce_values, verify_state, build_github_auth_url
@@ -236,10 +237,10 @@ def get_current_user_info(current_user: Users = Depends(get_current_user)):
     return serialize_user(current_user)
 
 @router.post("/github/exchange")
-def github_exchange(code: str, code_verifier: str, redirect_uri: str, db: Session = Depends(get_db)):
+def github_exchange(payload: ExchangeRequest, db: Session = Depends(get_db)):
     auth_service = AuthService(db)
 
-    github_token = auth_service.get_github_access_token(code, code_verifier)
+    github_token = auth_service.get_github_access_token(payload.code, payload.code_verifier)
     github_user = auth_service.get_github_user_info(github_token)
 
     user, _ = auth_service.create_or_update_user(github_user)

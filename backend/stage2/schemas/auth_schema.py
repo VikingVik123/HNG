@@ -102,3 +102,8 @@ class ErrorResponse(BaseModel):
                 "code": "INVALID_CREDENTIALS"
             }
         }
+
+class ExchangeRequest(BaseModel):
+    code: str
+    code_verifier: str
+    redirect_uri: str
