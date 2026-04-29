@@ -1,3 +1,5 @@
+from unittest import result
+
 import httpx
 import hashlib
 import os
@@ -166,52 +168,48 @@ class AuthService:
         return False
 
     def get_github_access_token(self, code: str, code_verifier: str = None) -> str:
-        """
-        Exchange GitHub authorization code for access token.
-        
-        Args:
-            code: Authorization code from GitHub callback
-            code_verifier: PKCE code verifier (optional, GitHub doesn't require it)
-            
-        Returns:
-            GitHub access token string
-            
-        Raises:
-            GitHubOAuthException: If GitHub API fails
-        """
         if not GITHUB_CLIENT_ID or not GITHUB_CLIENT_SECRET:
             raise GitHubOAuthException("GitHub credentials not configured")
-        
-        # Prepare request body
+
         data = {
             "client_id": GITHUB_CLIENT_ID,
             "client_secret": GITHUB_CLIENT_SECRET,
             "code": code,
         }
-        
+
         if code_verifier:
             data["code_verifier"] = code_verifier
-        
-        # Request headers
+
         headers = {"Accept": "application/json"}
-        
+
         try:
-            response = httpx.post(GITHUB_OAUTH_TOKEN_URL, data=data, headers=headers)
-            response.raise_for_status()
-            
-            result = response.json()
-            
-            if "error" in result:
-                raise GitHubOAuthException(f"GitHub error: {result.get('error_description', result['error'])}")
-            
+            response = httpx.post(
+                GITHUB_OAUTH_TOKEN_URL,
+                data=data,
+                headers=headers,
+                timeout=10
+            )
+
+            # 🔥 SAFELY parse JSON (avoid crash)
+            try:
+                result = response.json()
+            except Exception:
+                raise GitHubOAuthException(f"Invalid JSON from GitHub: {response.text}")
+
+            print("GITHUB TOKEN RESPONSE:", result)
+
+            if response.status_code != 200:
+                raise GitHubOAuthException(f"GitHub error: {result}")
+
             access_token = result.get("access_token")
+
             if not access_token:
-                raise GitHubOAuthException("No access token in GitHub response")
-            
+                raise GitHubOAuthException(f"No access token returned: {result}")
+
             return access_token
-            
-        except httpx.HTTPError as e:
-            raise GitHubOAuthException(f"GitHub API error: {str(e)}")
+
+        except httpx.RequestError as e:
+            raise GitHubOAuthException(f"Network error contacting GitHub: {str(e)}")
 
     def get_github_user_info(self, github_access_token: str) -> dict:
         """
