@@ -1,6 +1,5 @@
 from datetime import datetime
 import logging
-import uuid
 
 from app.db.session import SessionLocal
 from app.models.badge_job import BadgeGenerationJob
@@ -18,11 +17,9 @@ def process_badge_generation(job_id: str):
     db = SessionLocal()
 
     try:
-        # Convert string job_id to UUID
-        job_uuid = uuid.UUID(job_id)
-        
+        # Query using string job_id (stored as string in SQLite)
         job = db.query(BadgeGenerationJob).filter(
-            BadgeGenerationJob.job_id == job_uuid
+            BadgeGenerationJob.job_id == job_id
         ).first()
 
         if not job:

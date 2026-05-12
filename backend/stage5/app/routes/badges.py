@@ -1,5 +1,4 @@
-from fastapi import APIRouter
-import uuid
+from fastapi import APIRouter, Request
 
 from app.schemas.badge import BadgeGenerateRequest
 from app.db.session import SessionLocal
@@ -41,29 +40,32 @@ def generate_badge(payload: BadgeGenerateRequest):
 
 
 @router.get("/badges/jobs/{job_id}")
-def get_job(job_id: str):
+def get_job(job_id: str, request: Request):
 
     db = SessionLocal()
 
     try:
-        # Convert string job_id to UUID
-        job_uuid = uuid.UUID(job_id)
-        
         job = db.query(BadgeGenerationJob).filter(
-            BadgeGenerationJob.job_id == job_uuid
+            BadgeGenerationJob.job_id == job_id
         ).first()
 
         if not job:
+            db.close()
             return {"error": "not found"}
+
+        # Construct full URL for badge_image_url if it exists
+        badge_url = job.badge_image_url
+        if badge_url:
+            badge_url = str(request.base_url).rstrip('/') + badge_url
 
         db.close()
 
         return {
             "job_id": str(job.job_id),
             "status": job.status.value,
-            "badge_image_url": job.badge_image_url,
+            "badge_image_url": badge_url,
             "error_message": job.error_message
         }
-    except ValueError:
+    except Exception as e:
         db.close()
-        return {"error": "invalid job_id format"}
+        return {"error": f"invalid request: {str(e)}"}
